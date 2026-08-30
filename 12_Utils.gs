@@ -1,0 +1,9 @@
+function ok_(data,message){return {success:true,data:data===undefined?{}:data,message:message||'',errorCode:''};}
+function fail_(code,message){return {success:false,data:null,message:message||'Có lỗi xảy ra.',errorCode:code||'SYSTEM_ERROR'};}
+function errorResponse_(e){var msg=String(e&&e.message||e||'');var safeCodes=['AUTH_REQUIRED','FORBIDDEN','INVALID_INPUT','INVALID_CATEGORY','INVALID_PRIORITY','INVALID_DESCRIPTION','INVALID_REPORTER_MODE','CONTACT_CONSENT_REQUIRED','TOO_MANY_FILES','FILE_TYPE_NOT_ALLOWED','FILE_SIZE_NOT_ALLOWED','FILE_NAME_INVALID','NOT_FOUND','INVALID_LOGIN','INVALID_PASSWORD','WEAK_PASSWORD','INVALID_TRANSITION','DEADLINE_RULE_NOT_FOUND','CASE_ALREADY_CLOSED','CANNOT_DELETE','DATABASE_NOT_INITIALIZED','DRIVE_NOT_INITIALIZED'];var code=safeCodes.indexOf(msg)>=0?msg:'SYSTEM_ERROR';console.error(e);return fail_(code,code==='SYSTEM_ERROR'?'Có lỗi xảy ra. Vui lòng thử lại.':msg);}
+function uuid_(prefix){return (prefix||'ID')+'-'+Utilities.getUuid().replace(/-/g,'').substring(0,18).toUpperCase();}
+function generateCaseId_(){var lock=LockService.getScriptLock();lock.waitLock(10000);try{var y=Utilities.formatDate(now_(),APP_CONFIG.TIMEZONE,'yyyy');var p=PropertiesService.getScriptProperties();var key='CASE_SEQ_'+y;var seq=Number(p.getProperty(key)||0)+1;p.setProperty(key,String(seq));return APP_CONFIG.CASE_PREFIX+'-'+y+'-'+('000000'+seq).slice(-6);}finally{lock.releaseLock();}}
+function generateTrackingCode_(){return APP_CONFIG.CASE_PREFIX+'T-'+Utilities.getUuid().replace(/-/g,'').substring(0,APP_CONFIG.PUBLIC_TOKEN_LENGTH).toUpperCase();}
+function formatDate_(d){return Utilities.formatDate(new Date(d),APP_CONFIG.TIMEZONE,'dd/MM/yyyy HH:mm:ss');}
+function daysUntil_(deadline){if(!deadline)return null;return Math.ceil((new Date(deadline).getTime()-Date.now())/86400000);}
+function logError_(where,e){console.error(where+': '+String(e&&e.stack||e));}

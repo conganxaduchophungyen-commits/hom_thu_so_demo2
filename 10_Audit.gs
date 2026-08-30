@@ -1,0 +1,2 @@
+function audit_(userId,action,entity,entityId,sessionRef,details){try{appendRow_(SHEETS.AUDIT_LOG,AUDIT_FIELDS,{logId:uuid_('AUD'),timestamp:now_(),userId:userId||'PUBLIC',action:action,entity:entity||'',entityId:entityId||'',ipOrSession:sessionRef||'',details:JSON.stringify(details||{})});}catch(e){logError_('audit',e);}}
+function getAuditLog(payload){try{var s=requirePermission_(payload.token,'AUDIT_VIEW');var rows=getRows_(SHEETS.AUDIT_LOG,AUDIT_FIELDS,1000);return ok_(rows,'');}catch(e){return errorResponse_(e);}}

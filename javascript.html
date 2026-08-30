@@ -1,0 +1,18 @@
+<script>
+const APP = <?!= JSON.stringify(appConfig) ?>;
+const STATUS_LABELS={NEW:'Đã tiếp nhận',RECEIVED:'Đã tiếp nhận',CLASSIFIED:'Đang phân loại',ASSIGNED:'Đã chuyển cán bộ xử lý',PROCESSING:'Đang xác minh',VERIFYING:'Đang xác minh',WAITING_INFO:'Cần bổ sung thông tin',TRANSFERRED:'Đã chuyển cán bộ xử lý',RESOLVED:'Đã xử lý',CLOSED:'Kết thúc',OUT_OF_SCOPE:'Không thuộc thẩm quyền',CANCELLED:'Kết thúc'};
+const CAT_LABELS=Object.fromEntries(APP.categories.map(x=>[x.value,x.label]));
+function api(action,payload){return new Promise((resolve,reject)=>google.script.run.withSuccessHandler(resolve).withFailureHandler(e=>reject(e))[action](payload||{}));}
+function apiCall(action,payload){return api(action,payload).then(r=>{if(!r||!r.success){throw new Error(r&&r.message||'Có lỗi xảy ra.')}return r.data;});}
+function toast(msg){const el=document.getElementById('toast');if(!el)return;el.textContent=msg;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),3200)}
+function go(page){location.href='?page='+encodeURIComponent(page)}
+function session(){try{return JSON.parse(localStorage.getItem('ht_session')||'null')}catch(e){return null}}
+function setSession(s){localStorage.setItem('ht_session',JSON.stringify(s))}
+function clearSession(){localStorage.removeItem('ht_session')}
+function requireLogin(){const s=session();if(!s){go('login');return null}return s}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function fmtDate(s){if(!s)return '—';try{return new Date(s).toLocaleString('vi-VN')}catch(e){return s}}
+function badge(status){let c=['RESOLVED','CLOSED'].includes(status)?'green':['URGENT','CRITICAL'].includes(status)?'red':status==='WAITING_INFO'?'yellow':'';return `<span class="badge ${c}">${esc(STATUS_LABELS[status]||status)}</span>`}
+function fill(id,html){const el=document.getElementById(id);if(el)el.innerHTML=html}
+function submitForm(form,action,after){const btn=form.querySelector('[type=submit]');if(btn)btn.disabled=true;api(action,Object.fromEntries(new FormData(form).entries())).then(r=>after(r)).catch(e=>toast(e.message||'Có lỗi xảy ra')).finally(()=>{if(btn)btn.disabled=false})}
+</script>
